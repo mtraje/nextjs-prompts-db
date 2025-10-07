@@ -188,11 +188,11 @@ export default function Home() {
       {/* ✅ Main */}
       <main className="container mx-auto flex-1 p-6">
         {/* Search Bar */}
-        <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="mb-6 flex flex-col sm:flex-row text-black justify-between items-center gap-4">
           <input
             type="text"
             placeholder="Search Prompts..."
-            className="w-full p-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);

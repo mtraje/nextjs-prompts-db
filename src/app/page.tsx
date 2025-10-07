@@ -36,6 +36,9 @@ export default function Home() {
   const ITEMS_PER_PAGE = 8;
   const [currentPage, setCurrentPage] = useState(1);
 
+  // ✅ Modal State
+  const [modalImage, setModalImage] = useState<string | null>(null);
+
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
@@ -77,7 +80,15 @@ export default function Home() {
   }
 
   // ✅ Safe Image Loader for Local + Fallback
-  function LocalImage({ id, alt }: { id: string; alt: string }) {
+  function LocalImage({
+    id,
+    alt,
+    onClick,
+  }: {
+    id: string;
+    alt: string;
+    onClick?: () => void;
+  }) {
     const [error, setError] = useState(false);
 
     return (
@@ -87,8 +98,9 @@ export default function Home() {
         width={600}
         height={400}
         priority
-        className="rounded-t-lg w-full h-[400px] object-cover"
+        className="rounded-t-lg w-full h-[400px] object-cover cursor-pointer hover:opacity-90 transition"
         onError={() => setError(true)}
+        onClick={onClick}
       />
     );
   }
@@ -177,7 +189,6 @@ export default function Home() {
       <main className="container mx-auto flex-1 p-6">
         {/* Search Bar */}
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-         
           <input
             type="text"
             placeholder="Search Prompts..."
@@ -201,9 +212,16 @@ export default function Home() {
                 key={item.gem_id}
                 className="flex flex-col bg-white border border-gray-200 rounded-xl shadow hover:shadow-lg transition"
               >
-                <LocalImage id={item.gem_id} alt={item.gem_name || "No title"} />
+                <LocalImage
+                  id={item.gem_id}
+                  alt={item.gem_name || "No title"}
+                  onClick={() => setModalImage(`/img/${item.gem_id}.png`)}
+                />
+
                 <div className="p-5 flex flex-col gap-3">
-                  <h5 className="text-lg font-semibold text-gray-900">{item.gem_name}</h5>
+                  <h5 className="text-lg font-semibold text-gray-900">
+                    {item.gem_name}
+                  </h5>
 
                   <DescriptionAccordion
                     text={item.gem_desc}
@@ -224,21 +242,6 @@ export default function Home() {
                       className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 transition"
                     >
                       {expandedIndex === item.gem_id ? "Show less" : "Read more"}
-                      <svg
-                        className="w-3.5 h-3.5 ms-2 rtl:rotate-180"
-                        aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 14 10"
-                      >
-                        <path
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M1 5h12m0 0L9 1m4 4L9 9"
-                        />
-                      </svg>
                     </button>
                   </div>
                 </div>
@@ -252,6 +255,33 @@ export default function Home() {
         {/* Pagination (Bottom) */}
         <Pagination position="bottom" />
       </main>
+
+      {/* ✅ Image Modal */}
+      {modalImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={() => setModalImage(null)}
+        >
+          <div
+            className="relative bg-white rounded-xl overflow-hidden shadow-lg max-w-3xl w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setModalImage(null)}
+              className="absolute top-3 right-3 bg-gray-800 text-white rounded-full px-2 py-1 text-sm hover:bg-red-600"
+            >
+              ✕
+            </button>
+            <Image
+              src={modalImage}
+              alt="Full size image"
+              width={1200}
+              height={800}
+              className="w-full h-auto object-contain"
+            />
+          </div>
+        </div>
+      )}
 
       {/* ✅ Footer */}
       <footer className="bg-gray-800 text-gray-200 text-center py-4 mt-10">

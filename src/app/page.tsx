@@ -1,4 +1,4 @@
-"use client"; // Required for accordion interactivity
+"use client"; // Required for interactivity
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -12,11 +12,11 @@ type GemItem = {
   gem_category: string;
 };
 
-// Accordion Component for Description
+// ✅ Accordion for description
 function DescriptionAccordion({ text, expanded }: { text: string; expanded: boolean }) {
   return (
     <p
-      className={`text-gray-700 dark:text-gray-400 text-sm transition-all duration-300 ${
+      className={`text-gray-700 dark:text-gray-300 text-justify text-sm transition-all duration-300 ${
         expanded ? "" : "line-clamp-2"
       }`}
     >
@@ -32,8 +32,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [expandedIndex, setExpandedIndex] = useState<string | null>(null);
 
-  // ✅ Pagination state
-  const ITEMS_PER_PAGE = 8; // 2 rows × 4 columns
+  // ✅ Pagination
+  const ITEMS_PER_PAGE = 8;
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -58,7 +58,6 @@ export default function Home() {
       item.gem_category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // ✅ Pagination logic
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
   const paginatedData = filteredData.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -68,7 +67,7 @@ export default function Home() {
   if (loading) {
     return (
       <main className="container mx-auto p-6">
-        <div className="text-center text-gray-500">Loading...</div>
+        <div className="text-center text-gray-500 text-lg font-medium">Loading...</div>
       </main>
     );
   }
@@ -82,7 +81,7 @@ export default function Home() {
         alt={alt}
         width={600}
         height={600}
-        className="rounded-t-lg w-full h-[600px] object-cover"
+        className="rounded-t-lg w-full h-[300px] object-cover"
         onError={() => setError(true)}
       />
     );
@@ -100,70 +99,97 @@ export default function Home() {
       {/* ✅ Main Content */}
       <main className="container mx-auto flex-1 p-6">
         {/* 🔍 Search Bar */}
-        <input
-          type="text"
-          placeholder="Search Prompts..."
-          className="w-full mb-3 p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setCurrentPage(1);
-          }}
-        />
+        <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <input
+            type="text"
+            placeholder="Search Prompts..."
+            className="w-full sm:w-96 p-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
 
-        {/* 🔽 Pagination controls UNDER search bar */}
+        {/* ✅ Pagination (Top) */}
         {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mb-6">
+          <div className="flex flex-wrap justify-center items-center gap-2 mb-6">
             {/* Previous Button */}
             <button
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((prev) => prev - 1)}
-              className="px-3 py-2 bg-gray-200 rounded disabled:opacity-50"
+              className="px-4 py-2 bg-white border border-gray-300 rounded-xl shadow-sm hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
-              Previous
+              ← Previous
             </button>
 
-            {/* Page Number Links */}
-            {[...Array(totalPages)].map((_, index) => {
-              const pageNum = index + 1;
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={`px-3 py-2 rounded ${
-                    currentPage === pageNum
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 hover:bg-gray-300"
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
+            {/* Page Numbers */}
+            <div className="flex flex-wrap justify-center gap-1">
+              {[...Array(totalPages)].map((_, index) => {
+                const pageNum = index + 1;
+
+                if (
+                  pageNum === 1 ||
+                  pageNum === totalPages ||
+                  Math.abs(currentPage - pageNum) <= 1
+                ) {
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-10 h-10 flex items-center justify-center rounded-xl border transition shadow-sm
+                        ${
+                          currentPage === pageNum
+                            ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                            : "bg-white border-gray-300 text-gray-700 hover:bg-blue-50"
+                        }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                }
+
+                if (
+                  (pageNum === currentPage - 2 && pageNum > 1) ||
+                  (pageNum === currentPage + 2 && pageNum < totalPages)
+                ) {
+                  return (
+                    <span
+                      key={`ellipsis-${pageNum}`}
+                      className="w-10 h-10 flex items-center justify-center text-gray-400"
+                    >
+                      ...
+                    </span>
+                  );
+                }
+
+                return null;
+              })}
+            </div>
 
             {/* Next Button */}
             <button
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((prev) => prev + 1)}
-              className="px-3 py-2 bg-gray-200 rounded disabled:opacity-50"
+              className="px-4 py-2 bg-white border border-gray-300 rounded-xl shadow-sm hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
-              Next
+              Next →
             </button>
           </div>
         )}
 
-        {/* Cards Grid */}
+        {/* ✅ Cards Grid */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {paginatedData.length > 0 ? (
-            paginatedData.map((item: GemItem) => (
+            paginatedData.map((item) => (
               <div
                 key={item.gem_id}
-                className="flex flex-col bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition dark:bg-gray-800 dark:border-gray-700"
+                className="flex flex-col bg-white border border-gray-200 rounded-xl shadow hover:shadow-lg transition dark:bg-gray-800 dark:border-gray-700"
               >
                 <LocalImage id={item.gem_id} alt={item.gem_name || "No title"} />
-
-                <div className="p-5 flex flex-col gap-2">
-                  <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+                <div className="p-5 flex flex-col gap-3">
+                  <h5 className="text-lg font-semibold text-gray-900 dark:text-white">
                     {item.gem_name}
                   </h5>
 
@@ -172,16 +198,18 @@ export default function Home() {
                     expanded={expandedIndex === item.gem_id}
                   />
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mt-auto">
                     <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
                       {item.gem_category}
                     </span>
 
                     <button
                       onClick={() =>
-                        setExpandedIndex(expandedIndex === item.gem_id ? null : item.gem_id)
+                        setExpandedIndex(
+                          expandedIndex === item.gem_id ? null : item.gem_id
+                        )
                       }
-                      className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800"
+                      className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 transition"
                     >
                       {expandedIndex === item.gem_id ? "Show less" : "Read more"}
                       <svg
@@ -209,27 +237,63 @@ export default function Home() {
           )}
         </div>
 
-        {/* ✅ Pagination Controls (Bottom) */}
+        {/* ✅ Pagination (Bottom) */}
         {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-4 mt-6">
+          <div className="flex flex-wrap justify-center items-center gap-2 mt-10">
             <button
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((prev) => prev - 1)}
-              className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+              className="px-4 py-2 bg-white border border-gray-300 rounded-xl shadow-sm hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
-              Previous
+              ← Previous
             </button>
 
-            <span className="text-sm">
-              Page {currentPage} of {totalPages}
-            </span>
+            <div className="flex flex-wrap justify-center gap-1">
+              {[...Array(totalPages)].map((_, index) => {
+                const pageNum = index + 1;
+                if (
+                  pageNum === 1 ||
+                  pageNum === totalPages ||
+                  Math.abs(currentPage - pageNum) <= 1
+                ) {
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-10 h-10 flex items-center justify-center rounded-xl border transition shadow-sm
+                        ${
+                          currentPage === pageNum
+                            ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                            : "bg-white border-gray-300 text-gray-700 hover:bg-blue-50"
+                        }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                }
+                if (
+                  (pageNum === currentPage - 2 && pageNum > 1) ||
+                  (pageNum === currentPage + 2 && pageNum < totalPages)
+                ) {
+                  return (
+                    <span
+                      key={`ellipsis-${pageNum}`}
+                      className="w-10 h-10 flex items-center justify-center text-gray-400"
+                    >
+                      ...
+                    </span>
+                  );
+                }
+                return null;
+              })}
+            </div>
 
             <button
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((prev) => prev + 1)}
-              className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+              className="px-4 py-2 bg-white border border-gray-300 rounded-xl shadow-sm hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
-              Next
+              Next →
             </button>
           </div>
         )}

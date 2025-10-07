@@ -1,4 +1,4 @@
-"use client"; // Required for interactivity
+"use client";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -12,11 +12,11 @@ type GemItem = {
   gem_category: string;
 };
 
-// ✅ Accordion for description
+// ✅ Accordion Component
 function DescriptionAccordion({ text, expanded }: { text: string; expanded: boolean }) {
   return (
     <p
-      className={`text-gray-700 dark:text-gray-300 text-justify text-sm transition-all duration-300 ${
+      className={`text-gray-700 text-justify text-sm transition-all duration-300 ${
         expanded ? "" : "line-clamp-2"
       }`}
     >
@@ -32,7 +32,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [expandedIndex, setExpandedIndex] = useState<string | null>(null);
 
-  // ✅ Pagination
+  // ✅ Pagination State
   const ITEMS_PER_PAGE = 8;
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -42,7 +42,8 @@ export default function Home() {
       try {
         const result = await fetchSheetData(SHEET_ID);
         setData(result);
-      } catch {
+      } catch (error) {
+        console.error("Failed to fetch sheet data:", error);
         setData([]);
       } finally {
         setLoading(false);
@@ -51,6 +52,7 @@ export default function Home() {
     fetchData();
   }, []);
 
+  // ✅ Filter + Paginate
   const filteredData = data.filter(
     (item) =>
       item.gem_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -67,11 +69,14 @@ export default function Home() {
   if (loading) {
     return (
       <main className="container mx-auto p-6">
-        <div className="text-center text-gray-500 text-lg font-medium">Loading...</div>
+        <div className="text-center text-gray-500 text-lg font-medium animate-pulse">
+          Loading...
+        </div>
       </main>
     );
   }
 
+  // ✅ Safe Image Loader for Local + Fallback
   function LocalImage({ id, alt }: { id: string; alt: string }) {
     const [error, setError] = useState(false);
 
@@ -80,15 +85,87 @@ export default function Home() {
         src={error ? "/img/noimage.png" : `/img/${id}.png`}
         alt={alt}
         width={600}
-        height={600}
-        className="rounded-t-lg w-full h-[300px] object-cover"
+        height={400}
+        priority
+        className="rounded-t-lg w-full h-[250px] object-cover"
         onError={() => setError(true)}
       />
     );
   }
 
+  // ✅ Pagination Component
+  const Pagination = ({ position }: { position: "top" | "bottom" }) =>
+    totalPages > 1 && (
+      <div
+        className={`flex flex-wrap justify-center items-center gap-2 ${
+          position === "top" ? "mb-6" : "mt-10"
+        }`}
+      >
+        {/* Prev */}
+        <button
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage((prev) => prev - 1)}
+          className="px-4 py-2 bg-white border border-gray-300 rounded-xl shadow-sm text-black hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+        >
+          ← Previous
+        </button>
+
+        {/* Page Numbers */}
+        <div className="flex flex-wrap justify-center gap-1">
+          {[...Array(totalPages)].map((_, i) => {
+            const pageNum = i + 1;
+            if (
+              pageNum === 1 ||
+              pageNum === totalPages ||
+              Math.abs(currentPage - pageNum) <= 1
+            ) {
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`w-10 h-10 flex items-center justify-center rounded-xl border transition shadow-sm text-black
+                    ${
+                      currentPage === pageNum
+                        ? "bg-blue-100 border-blue-400 font-bold"
+                        : "bg-white border-gray-300 hover:bg-blue-50"
+                    }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            }
+
+            if (
+              (pageNum === currentPage - 2 && pageNum > 1) ||
+              (pageNum === currentPage + 2 && pageNum < totalPages)
+            ) {
+              return (
+                <span
+                  key={`ellipsis-${pageNum}`}
+                  className="w-10 h-10 flex items-center justify-center text-gray-400"
+                >
+                  ...
+                </span>
+              );
+            }
+
+            return null;
+          })}
+        </div>
+
+        {/* Next */}
+        <button
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage((prev) => prev + 1)}
+          className="px-4 py-2 bg-white border border-gray-300 rounded-xl shadow-sm text-black hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+        >
+          Next →
+        </button>
+      </div>
+    );
+
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* ✅ Header */}
       <header className="bg-blue-700 text-white py-6 shadow-md">
         <h1 className="text-3xl font-bold text-center tracking-wide">
@@ -96,9 +173,9 @@ export default function Home() {
         </h1>
       </header>
 
-      {/* ✅ Main Content */}
+      {/* ✅ Main */}
       <main className="container mx-auto flex-1 p-6">
-        {/* 🔍 Search Bar */}
+        {/* Search Bar */}
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <input
             type="text"
@@ -112,86 +189,20 @@ export default function Home() {
           />
         </div>
 
-        {/* ✅ Pagination (Top) */}
-        {totalPages > 1 && (
-          <div className="flex flex-wrap justify-center items-center gap-2 mb-6">
-            {/* Previous Button */}
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((prev) => prev - 1)}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-xl shadow-sm hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
-            >
-              ← Previous
-            </button>
+        {/* Pagination (Top) */}
+        <Pagination position="top" />
 
-            {/* Page Numbers */}
-            <div className="flex flex-wrap justify-center gap-1">
-              {[...Array(totalPages)].map((_, index) => {
-                const pageNum = index + 1;
-
-                if (
-                  pageNum === 1 ||
-                  pageNum === totalPages ||
-                  Math.abs(currentPage - pageNum) <= 1
-                ) {
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => setCurrentPage(pageNum)}
-                      className={`w-10 h-10 flex items-center justify-center rounded-xl border transition shadow-sm
-                        ${
-                          currentPage === pageNum
-                            ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                            : "bg-white border-gray-300 text-gray-700 hover:bg-blue-50"
-                        }`}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                }
-
-                if (
-                  (pageNum === currentPage - 2 && pageNum > 1) ||
-                  (pageNum === currentPage + 2 && pageNum < totalPages)
-                ) {
-                  return (
-                    <span
-                      key={`ellipsis-${pageNum}`}
-                      className="w-10 h-10 flex items-center justify-center text-gray-400"
-                    >
-                      ...
-                    </span>
-                  );
-                }
-
-                return null;
-              })}
-            </div>
-
-            {/* Next Button */}
-            <button
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((prev) => prev + 1)}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-xl shadow-sm hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
-            >
-              Next →
-            </button>
-          </div>
-        )}
-
-        {/* ✅ Cards Grid */}
+        {/* ✅ Card Grid */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {paginatedData.length > 0 ? (
             paginatedData.map((item) => (
               <div
                 key={item.gem_id}
-                className="flex flex-col bg-white border border-gray-200 rounded-xl shadow hover:shadow-lg transition dark:bg-gray-800 dark:border-gray-700"
+                className="flex flex-col bg-white border border-gray-200 rounded-xl shadow hover:shadow-lg transition"
               >
                 <LocalImage id={item.gem_id} alt={item.gem_name || "No title"} />
                 <div className="p-5 flex flex-col gap-3">
-                  <h5 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {item.gem_name}
-                  </h5>
+                  <h5 className="text-lg font-semibold text-gray-900">{item.gem_name}</h5>
 
                   <DescriptionAccordion
                     text={item.gem_desc}
@@ -237,66 +248,8 @@ export default function Home() {
           )}
         </div>
 
-        {/* ✅ Pagination (Bottom) */}
-        {totalPages > 1 && (
-          <div className="flex flex-wrap justify-center items-center gap-2 mt-10">
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((prev) => prev - 1)}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-xl shadow-sm hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
-            >
-              ← Previous
-            </button>
-
-            <div className="flex flex-wrap justify-center gap-1">
-              {[...Array(totalPages)].map((_, index) => {
-                const pageNum = index + 1;
-                if (
-                  pageNum === 1 ||
-                  pageNum === totalPages ||
-                  Math.abs(currentPage - pageNum) <= 1
-                ) {
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => setCurrentPage(pageNum)}
-                      className={`w-10 h-10 flex items-center justify-center rounded-xl border transition shadow-sm
-                        ${
-                          currentPage === pageNum
-                            ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                            : "bg-white border-gray-300 text-gray-700 hover:bg-blue-50"
-                        }`}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                }
-                if (
-                  (pageNum === currentPage - 2 && pageNum > 1) ||
-                  (pageNum === currentPage + 2 && pageNum < totalPages)
-                ) {
-                  return (
-                    <span
-                      key={`ellipsis-${pageNum}`}
-                      className="w-10 h-10 flex items-center justify-center text-gray-400"
-                    >
-                      ...
-                    </span>
-                  );
-                }
-                return null;
-              })}
-            </div>
-
-            <button
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((prev) => prev + 1)}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-xl shadow-sm hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
-            >
-              Next →
-            </button>
-          </div>
-        )}
+        {/* Pagination (Bottom) */}
+        <Pagination position="bottom" />
       </main>
 
       {/* ✅ Footer */}

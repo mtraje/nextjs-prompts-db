@@ -87,7 +87,7 @@ export default function Home() {
         width={600}
         height={400}
         priority
-        className="rounded-t-lg w-full h-[250px] object-cover"
+        className="rounded-t-lg w-full h-[400px] object-cover"
         onError={() => setError(true)}
       />
     );
@@ -177,10 +177,11 @@ export default function Home() {
       <main className="container mx-auto flex-1 p-6">
         {/* Search Bar */}
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+         
           <input
             type="text"
             placeholder="Search Prompts..."
-            className="w-full sm:w-96 p-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);

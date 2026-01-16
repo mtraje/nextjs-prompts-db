@@ -26,7 +26,8 @@ function DescriptionAccordion({ text, expanded }: { text: string; expanded: bool
 }
 
 export default function Home() {
-  const SHEET_ID = "19XzkckdgYhbZpRKBT5IJFg4m0Tb_3zqQvCbvuO_lhGo";
+  //const SHEET_ID = "19XzkckdgYhbZpRKBT5IJFg4m0Tb_3zqQvCbvuO_lhGo";
+  const SHEET_ID = "1yeqPJbUGIqZyACECFHPksrj2r4SAGjSKvqqufv9QqF8";
   const [data, setData] = useState<GemItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);

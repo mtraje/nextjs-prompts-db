@@ -80,27 +80,43 @@ export default function Home() {
     );
   }
 
-  // ✅ Safe Image Loader for Local + Fallback
-  function LocalImage({
+  // ✅ Safe Image Loader - Remote URL first, then Local + Fallback
+  function GemImage({
     id,
+    remoteUrl,
     alt,
     onClick,
   }: {
     id: string;
+    remoteUrl: string;
     alt: string;
     onClick?: () => void;
   }) {
+    const [imgSrc, setImgSrc] = useState(remoteUrl || `/img/${id}.png`);
     const [error, setError] = useState(false);
+
+    const handleError = () => {
+      if (!error) {
+        // Try local image if remote fails
+        if (imgSrc === remoteUrl && remoteUrl) {
+          setImgSrc(`/img/${id}.png`);
+        } else {
+          // Final fallback to noimage
+          setImgSrc("/img/noimage.png");
+          setError(true);
+        }
+      }
+    };
 
     return (
       <Image
-        src={error ? "/img/noimage.png" : `/img/${id}.png`}
+        src={imgSrc}
         alt={alt}
         width={600}
         height={400}
         priority
         className="rounded-t-lg w-full h-[400px] object-cover cursor-pointer hover:opacity-90 transition"
-        onError={() => setError(true)}
+        onError={handleError}
         onClick={onClick}
       />
     );
@@ -213,10 +229,11 @@ export default function Home() {
                 key={item.gem_id}
                 className="flex flex-col bg-white border border-gray-200 rounded-xl shadow hover:shadow-lg transition"
               >
-                <LocalImage
+                <GemImage
                   id={item.gem_id}
+                  remoteUrl={item.gem_imageurl}
                   alt={item.gem_name || "No title"}
-                  onClick={() => setModalImage(`/img/${item.gem_id}.png`)}
+                  onClick={() => setModalImage(item.gem_imageurl || `/img/${item.gem_id}.png`)}
                 />
 
                 <div className="p-5 flex flex-col gap-3">

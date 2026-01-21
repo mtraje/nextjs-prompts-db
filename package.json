@@ -11,10 +11,13 @@
   "dependencies": {
     "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",
-    "next": "15.5.4",
+    "next": "^16.1.4",
     "papaparse": "^5.5.3",
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-server-dom-parcel": "^19.2.3",
+    "react-server-dom-turbopack": "^19.2.3",
+    "react-server-dom-webpack": "^19.2.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
